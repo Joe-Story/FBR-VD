@@ -1,3 +1,4 @@
+VD FRAME:
 UBJ: x=116.32mm, y=236.82mm, z=306.59mm
 LBJ: x=88.9mm, y=49.82mm, z=290.29mm
 
@@ -10,12 +11,24 @@ King Pin Axis Inclination (x,y) = 8.342'
 
 FULL CAR FRAME:
 Vehicle centreline is 302.08mm (z) from Top Front Mount
+Ground plane is 914.11mm (y)
+Wheel centreline is 600mm (z) from the vehicle centreline
 
-UBJ Left: x=-16.18mm, y=1265.11mm, z=1569.01mm
-LBJ Right: x=-0.54mm, y=1085.61mm, z=1542.69mm
+
+Front of Car (Left)
+UBJ: x=-16.18mm, y=1265.11mm, z=1569.01mm
+LBJ: x=-0.54mm, y=1085.61mm, z=1542.69mm
 Top Front Mount: x=99.60mm, y=1271.22mm, z=1805.46mm
 Top Back Mount: x=-222.09mm, y=1253.76mm, z=1801.04mm
 Bottom Front Mount: x=64.63mm, y=1063.45mm, z=1890.26mm
 Bottom Back Mount: x=-282.18mm, y=1063.16mm, z=1894.78mm
+
+Rear of Car (Left)
+UBJ: x=-1609.96mm, y=1272.11mm, z=1557.54mm
+LBJ: x=-1629.43mm, y=1049.61mm, z=1557.54mm
+Top Front Mount: x=-1131.13mm, y=1255.60mm, z=1773.29mm
+Top Back Mount: x=-1534.58mm, y=1260.87mm, z=1780.41mm
+Bottom Front Mount: x=-1132.95mm, y=1049.22mm, z=1866.37mm
+Bottom Back Mount: x=-1494.73mm, y=1049.15mm, z=1866.40mm
 
 x is towards the front, y is upwards, z is to the right of the vehicle (but the z origin is fucking miles away to the left lol)
