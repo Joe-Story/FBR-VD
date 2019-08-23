@@ -213,6 +213,7 @@ RHS_Scrub_radii = [];
 LHS_Scrub_radii = [];
 LHS_cambers = [];
 RHS_cambers = [];
+RC_migration = [];
 
 # Set initial camber to be equal to the value of static camber defined earlier.
 LHS_camber = static_camber;
@@ -228,8 +229,8 @@ camber_to_kingpin = RHS_camber - RHS_kingpin_angle;
 # Output the baseline roll centre
 RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
 LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
-Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);
-print(Roll_centre);
+Roll_centre_init = Find_RC(RHS_IC, LHS_IC, Track);
+print(Roll_centre_init);
 print("Baseline roll centre height is: " + str(round(Roll_centre[1],2)) + " mm.");
 
 """This is the main loop of the code"""
@@ -296,6 +297,7 @@ while Sweep_param < Sweep_size:
     
     # Append current values to the appropriate lists in order to plot graphs later
     Roll_centres.append((Roll_centre[0],Roll_centre[1]));
+    RC_migration.append((Roll_centre[0] - Roll_centre_init[0],Roll_centre[1] - Roll_centre_init[1]));
     COG_migration.append(Applied_bump - Sweep_size + Sweep_param);
     RHS_Scrub_radii.append(RHS_scrub_rad);
     LHS_Scrub_radii.append(LHS_scrub_rad);
@@ -325,11 +327,40 @@ LHS_Scrub_radii.append(LHS_scrub_rad);
 RHS_cambers.append(RHS_camber);
 LHS_cambers.append(LHS_camber);
 
+# Plot a graph of roll centres in absolute space;
+plt.scatter(*zip(*Roll_centres));
+plt.grid();
+plt.xlabel("x-coordinate");
+plt.ylabel("y-coordinate");
+plt.title("Absolute roll centre position");
+plt.show();
+
+#Plot graphs for scrub radius vs roll
 plt.scatter(COG_migration,LHS_Scrub_radii);
+plt.grid();
+plt.xlabel("Applied roll angle");
+plt.ylabel("LHS scrub radius");
+plt.title("LHS scrub radius vs roll");
 plt.show();
 
 plt.scatter(COG_migration,RHS_Scrub_radii);
+plt.grid();
+plt.xlabel("Applied roll angle");
+plt.ylabel("LHS scrub radius");
+plt.title("RHS scrub radius vs roll");
 plt.show();
 
-plt.scatter(*zip(*Roll_centres));
+#Plot graphs for camber vs roll
+plt.scatter(COG_migration,RHS_cambers);
+plt.grid();
+plt.xlabel("Applied roll angle");
+plt.ylabel("RHS camber angle");
+plt.title("RHS camber angle vs roll");
+plt.show();
+
+plt.scatter(COG_migration,LHS_cambers);
+plt.grid();
+plt.xlabel("Applied roll angle");
+plt.ylabel("LHS camber angle");
+plt.title("LHS camber angle vs roll");
 plt.show();

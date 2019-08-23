@@ -37,7 +37,7 @@ LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup po
 Track = 1200; #Total track width
 Sprung_COG = [0,276.3666667]; #Static sprung mass COG. This will move as the car rolls in the simulation.
 Roll_centre = [0,0] #This will not be used at the given value, but will be calculated later.
-Roll_step = 0.05; #Add a small amount of roll with each iteration. The smaller this is, the more accurate it will be but will take longer to run.
+Roll_step = 0.001; #Add a small amount of roll with each iteration. The smaller this is, the more accurate it will be but will take longer to run.
 RHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 
@@ -236,6 +236,7 @@ RHS_Scrub_radii = [];
 LHS_Scrub_radii = [];
 LHS_cambers = [];
 RHS_cambers = [];
+RC_migration = [];
 
 # Set initial camber to be equal to the value of static camber defined earlier.
 LHS_camber = static_camber;
@@ -247,6 +248,12 @@ LHS_kingpin_angle = Find_kingpin_angle(LHS_Upr_OB_pickup,LHS_Lwr_OB_pickup);
 
 # The angle between camber and kingpin is fixed so this allows us to find camber.
 camber_to_kingpin = RHS_camber - RHS_kingpin_angle;
+
+# Output the baseline roll centre
+RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
+LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
+Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);
+print("Baseline roll centre height is: " + str(round(Roll_centre[1],2)) + " mm.");
 
 
 """This is the main loop of the code"""
@@ -271,6 +278,7 @@ while Roll <= Applied_roll:
     
     # Append current values to the appropriate lists in order to plot graphs later
     Roll_centres.append((Roll_centre[0],Roll_centre[1]));
+    RC_migration.append((Roll_centre[0] - Roll_centres[0][0],Roll_centre[1] - Roll_centres[0][1]));
     Roll_angles.append(Roll);
     RHS_Scrub_radii.append(RHS_scrub_rad);
     LHS_Scrub_radii.append(LHS_scrub_rad);
@@ -291,14 +299,53 @@ while Roll <= Applied_roll:
     LHS_Lwr_OB_pickup = Rotate_OB(LHS_Lwr_OB_pickup,-Track,LHS_Lwr_IB_pickup,LWB_length);
     
     Roll += Roll_step;
-    
-print(Roll_centres);
+
+
+
+
+# Plot a graph of roll centres in absolute space;
+plt.scatter(*zip(*Roll_centres));
+plt.grid();
+plt.xlabel("x-coordinate");
+plt.ylabel("y-coordinate");
+plt.title("Absolute roll centre position");
+plt.show();
+
+# Plot a graph of roll_centre migration
+plt.scatter(*zip(*RC_migration));
+plt.grid();
+plt.xlabel("x migration");
+plt.ylabel("y migration");
+plt.title("Roll centre migration");
+plt.show();
+
+#Plot graphs for scrub radius vs roll
 plt.scatter(Roll_angles,LHS_Scrub_radii);
+plt.grid();
+plt.xlabel("Applied roll angle");
+plt.ylabel("LHS scrub radius");
+plt.title("LHS scrub radius vs roll");
 plt.show();
 
 plt.scatter(Roll_angles,RHS_Scrub_radii);
+plt.grid();
+plt.xlabel("Applied roll angle");
+plt.ylabel("LHS scrub radius");
+plt.title("RHS scrub radius vs roll");
 plt.show();
 
-plt.scatter(*zip(*Roll_centres));
+#Plot graphs for camber vs roll
+plt.scatter(Roll_angles,RHS_cambers);
+plt.grid();
+plt.xlabel("Applied roll angle");
+plt.ylabel("RHS camber angle");
+plt.title("RHS camber angle vs roll");
+plt.show();
+
+plt.scatter(Roll_angles,LHS_cambers);
+plt.grid();
+plt.xlabel("Applied roll angle");
+plt.ylabel("LHS camber angle");
+plt.title("LHS camber angle vs roll");
 plt.show();
     
