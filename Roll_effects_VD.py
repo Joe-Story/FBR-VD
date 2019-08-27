@@ -21,15 +21,15 @@ import math #Import math library;
 import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [609.39,300]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [592.37,100]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [538.53,351]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = 0; #In degrees
-UWB_length = 140; #Upper wishbone length in front view
-LWB_length = 220; #Lower wishbone length in front view
-UWB_angle = 5; #Upper wishbone angle to horizontal. Anti-clockwise positive
-LWB_angle = 0; #Lower wishbone angle to horizontal. Anti-clockwise positive
+UWB_length = 234.254625; #Upper wishbone length in front view
+LWB_length = 418.9412262; #Lower wishbone length in front view
+UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
+LWB_angle = -7.910191806; #Lower wishbone angle to horizontal. Anti-clockwise positive
 RHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Upr IB pickup point.
 RHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
@@ -42,7 +42,7 @@ RHS_scrub_rad = 0; # This will be calculated later so the value is largely irrel
 LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 
 # Define the maximum amount of expected roll and the program will iterate up to this.
-Applied_roll = 2; #Roll artificially applied to the car
+Applied_roll = 3; #Roll artificially applied to the car
 Roll = 0; #Initial roll
 
 # Convert degrees to radians for math library.

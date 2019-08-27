@@ -11,7 +11,7 @@ If you would like to request permission to use this intellectual property, pleas
 
 # This script will allow you to approximate roll-centre migration, camber changes and scrub radius
 # throughout a bump and rebound.
-#Bump is negative and rebound is positive
+# Bump is negative and rebound is positive
 # This model is based on front view only.
 # Caveat is that this is not infinitely accurate because the roll centre is dynamic but is only taken at discrete points
 # Another assumption is that there is 0% cross weight (i.e. COG is on the centreline when static)
@@ -21,15 +21,15 @@ import math #Import math library;
 import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [609.39,300]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [592.37,100]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [538.53,351]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = 0; #In degrees
-UWB_length = 140; #Upper wishbone length in front view
-LWB_length = 220; #Lower wishbone length in front view
-UWB_angle = 5; #Upper wishbone angle to horizontal. Anti-clockwise positive
-LWB_angle = 0; #Lower wishbone angle to horizontal. Anti-clockwise positive
+UWB_length = 234.254625; #Upper wishbone length in front view
+LWB_length = 418.9412262; #Lower wishbone length in front view
+UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
+LWB_angle = -7.910191806; #Lower wishbone angle to horizontal. Anti-clockwise positive
 RHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Upr IB pickup point.
 RHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
@@ -338,29 +338,29 @@ plt.show();
 #Plot graphs for scrub radius vs roll
 plt.scatter(COG_migration,LHS_Scrub_radii);
 plt.grid();
-plt.xlabel("Applied roll angle");
+plt.xlabel("Applied bump (rebound +ve)");
 plt.ylabel("LHS scrub radius");
-plt.title("LHS scrub radius vs roll");
+plt.title("LHS scrub radius vs bump");
 plt.show();
 
 plt.scatter(COG_migration,RHS_Scrub_radii);
 plt.grid();
-plt.xlabel("Applied roll angle");
+plt.xlabel("Applied bump (rebound +ve)");
 plt.ylabel("LHS scrub radius");
-plt.title("RHS scrub radius vs roll");
+plt.title("RHS scrub radius vs bump");
 plt.show();
 
 #Plot graphs for camber vs roll
 plt.scatter(COG_migration,RHS_cambers);
 plt.grid();
-plt.xlabel("Applied roll angle");
+plt.xlabel("Applied bump (rebound +ve)");
 plt.ylabel("RHS camber angle");
-plt.title("RHS camber angle vs roll");
+plt.title("RHS camber angle vs bump");
 plt.show();
 
 plt.scatter(COG_migration,LHS_cambers);
 plt.grid();
-plt.xlabel("Applied roll angle");
+plt.xlabel("Applied bump (rebound +ve)");
 plt.ylabel("LHS camber angle");
-plt.title("LHS camber angle vs roll");
+plt.title("LHS camber angle vs bump");
 plt.show();
