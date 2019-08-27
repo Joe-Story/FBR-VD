@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jul 30 20:07:37 2019
+Created on Fri Aug 23 22:37:23 2019
 
 @author: ryan
 
@@ -10,9 +10,9 @@ If you would like to request permission to use this intellectual property, pleas
 """
 
 # This script will allow you to approximate roll-centre migration, camber changes and scrub radius
-# throughout a roll sweep.
+# throughout a bump and rebound.
+#Bump is negative and rebound is positive
 # This model is based on front view only.
-# Rotation (roll) is clockwise in the model
 # Caveat is that this is not infinitely accurate because the roll centre is dynamic but is only taken at discrete points
 # Another assumption is that there is 0% cross weight (i.e. COG is on the centreline when static)
 # The centre of the contact patch is assumed constant, on the wheel centreline at zero camber.
@@ -37,13 +37,14 @@ LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup po
 Track = 1200; #Total track width
 Sprung_COG = [0,276.3666667]; #Static sprung mass COG. This will move as the car rolls in the simulation.
 Roll_centre = [0,0] #This will not be used at the given value, but will be calculated later.
-Roll_step = 0.001; #Add a small amount of roll with each iteration. The smaller this is, the more accurate it will be but will take longer to run.
+Movement_step = 0.1; #Add a small amount of roll with each iteration. The smaller this is, the more accurate it will be but will take longer to run.
 RHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 
 # Define the maximum amount of expected roll and the program will iterate up to this.
-Applied_roll = 2; #Roll artificially applied to the car
-Roll = 0; #Initial roll
+Applied_bump = 30; #Maxmimum bump artificially applied to the car.
+Applied_rebound = 20; #Maximum rebound artificially applied to the car.
+Sweep_param = 0 #Initial counting parameter for the sweep is set to zero.
 
 # Convert degrees to radians for math library.
 UWB_angle = UWB_angle*math.pi/180;
@@ -141,39 +142,15 @@ def Find_camber(camber_to_kingpin,kingpin):
     return camber
     
 
-#Function to rotate the COG and IB pickup points about the roll centre.
-def Rotate_IB_point(Point,Roll_Centre,step):
-    # Find the position of the IB point relative to the roll centre in polar coordinates.
-    r = math.sqrt(((Point[0] - Roll_Centre[0])**2) + ((Point[1] - Roll_Centre[1])**2));
-    
-    Point_to_RC = [Point[0] - Roll_Centre[0],Point[1] - Roll_Centre[1]]
-    if Point_to_RC[0] == 0 and Point_to_RC[1] > 0: 
-        theta = math.pi/2;
-    elif Point_to_RC[0] == 0 and Point_to_RC[1] < 0:
-        theta = 1.5*math.pi;
-    elif Point_to_RC == [0,0]:
-        return Point
-    elif Point_to_RC[0] > 0 and  Point_to_RC[1] >= 0:
-        theta = math.atan(Point_to_RC[1]/Point_to_RC[0]);
-    elif Point_to_RC[0] < 0 and Point_to_RC[1] >= 0:
-        theta  = math.pi - math.atan(abs(Point_to_RC[1]/Point_to_RC[0]));
-    elif Point_to_RC[0] < 0 and Point_to_RC[1] <= 0:
-        theta  = math.atan(abs(Point_to_RC[1]/Point_to_RC[0])) - math.pi;
-    elif Point_to_RC[0] > 0 and Point_to_RC[1] <= 0:
-        theta  = -math.atan(abs(Point_to_RC[1]/Point_to_RC[0]));
-    
-    # Rotate by the specified step (the variable passed into the function should be Roll_step, as defined above)
-    step = step*math.pi/180 # convert the step to radians
-    theta -= step;
-    
-    # Convert back to cartesian coordinates adding the polar to the roll centre, which was previously the "origin"
-    Point[0] = (r * math.cos(theta)) + Roll_Centre[0];
-    Point[1] = (r * math.sin(theta)) + Roll_Centre[1];
+#Function to Move the COG and IB pickup points in bump or rebound.
+def Move_IB_point(Point,step):
+    #Move the point upwards by the specified step.
+    Point[1] += step;
     
     return Point
 
 #Function to find the new position of an OB pickup point, given the new IB pickup points and old OB points.
-def Rotate_OB(OB_point,Track,IB_point,WB_rad):
+def Find_OB(OB_point,Track,IB_point,WB_rad):
     
     # Find the radius of the cirlce passing through the centre of contact patch and OB point.
     r0 = math.sqrt(((OB_point[0] - Track/2)**2) + (OB_point[1]**2));
@@ -231,7 +208,7 @@ def Rotate_OB(OB_point,Track,IB_point,WB_rad):
 
 # Create lists to hold the roll centre coordinates, roll angles, scrub radii and wheel camber
 Roll_centres = [];
-Roll_angles = [];
+COG_migration = [];
 RHS_Scrub_radii = [];
 LHS_Scrub_radii = [];
 LHS_cambers = [];
@@ -252,12 +229,54 @@ camber_to_kingpin = RHS_camber - RHS_kingpin_angle;
 # Output the baseline roll centre
 RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
 LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
-Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);
+Roll_centre_init = Find_RC(RHS_IC, LHS_IC, Track);
+print(Roll_centre_init);
 print("Baseline roll centre height is: " + str(round(Roll_centre[1],2)) + " mm.");
 
-
 """This is the main loop of the code"""
-while Roll <= Applied_roll:
+
+#Initially, we move the geometry into the maximum Bump condition
+while Sweep_param <= Applied_bump:
+    # This iterative loop rolls the car up to the expected maximum and saves the coordinates in a list
+    # of tuples that are later used to plot a graph of roll migration.
+    # Find the instantaneous centres
+    RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
+    LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
+    
+    # Find the roll centre, scrub radius and kingpin angle.
+    Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);
+    RHS_scrub_rad = Find_scrub_rad(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,Track);
+    LHS_scrub_rad = Find_scrub_rad(LHS_Upr_OB_pickup,LHS_Lwr_OB_pickup,Track);
+    RHS_kingpin_angle = Find_kingpin_angle(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup);
+    LHS_kingpin_angle = Find_kingpin_angle(LHS_Upr_OB_pickup,LHS_Lwr_OB_pickup);
+    
+    
+    #From the kingpin angles, we can find camber.
+    RHS_camber = Find_camber(camber_to_kingpin,RHS_kingpin_angle);
+    LHS_camber = Find_camber(camber_to_kingpin,LHS_kingpin_angle);
+    
+    # Rotate the COG and IB pickup points (same angle of rotation because it's a solid body)
+    Sprung_COG = Move_IB_point(Sprung_COG,Movement_step);
+    RHS_Upr_IB_pickup = Move_IB_point(RHS_Upr_IB_pickup,-Movement_step);
+    RHS_Lwr_IB_pickup = Move_IB_point(RHS_Lwr_IB_pickup,-Movement_step);
+    LHS_Upr_IB_pickup = Move_IB_point(LHS_Upr_IB_pickup,-Movement_step);
+    LHS_Lwr_IB_pickup = Move_IB_point(LHS_Lwr_IB_pickup,-Movement_step);
+    
+    # From the new IB pickup points, find the new positions of the OB points.
+    RHS_Upr_OB_pickup = Find_OB(RHS_Upr_OB_pickup,Track,RHS_Upr_IB_pickup,UWB_length);
+    RHS_Lwr_OB_pickup = Find_OB(RHS_Lwr_OB_pickup,Track,RHS_Lwr_IB_pickup,LWB_length);
+    LHS_Upr_OB_pickup = Find_OB(LHS_Upr_OB_pickup,-Track,LHS_Upr_IB_pickup,UWB_length);
+    LHS_Lwr_OB_pickup = Find_OB(LHS_Lwr_OB_pickup,-Track,LHS_Lwr_IB_pickup,LWB_length);
+    
+    Sweep_param += Movement_step;
+    
+""" After moving the COG to its lowest expected point, we run through the whole sweep
+    from maximum bump to maximum rebound."""
+
+Sweep_param = 0; #Reset the sweep parameter.
+Sweep_size = Applied_bump + Applied_rebound; #Define the total size of the sweep.
+
+while Sweep_param < Sweep_size:
     # This iterative loop rolls the car up to the expected maximum and saves the coordinates in a list
     # of tuples that are later used to plot a graph of roll migration.
     # Find the instantaneous centres
@@ -278,30 +297,35 @@ while Roll <= Applied_roll:
     
     # Append current values to the appropriate lists in order to plot graphs later
     Roll_centres.append((Roll_centre[0],Roll_centre[1]));
-    RC_migration.append((Roll_centre[0] - Roll_centres[0][0],Roll_centre[1] - Roll_centres[0][1]));
-    Roll_angles.append(Roll);
+    RC_migration.append((Roll_centre[0] - Roll_centre_init[0],Roll_centre[1] - Roll_centre_init[1]));
+    COG_migration.append(Applied_bump - Sweep_size + Sweep_param);
     RHS_Scrub_radii.append(RHS_scrub_rad);
     LHS_Scrub_radii.append(LHS_scrub_rad);
     RHS_cambers.append(RHS_camber);
     LHS_cambers.append(LHS_camber);
     
     # Rotate the COG and IB pickup points (same angle of rotation because it's a solid body)
-    Sprung_COG = Rotate_IB_point(Sprung_COG,Roll_centre,Roll_step);
-    RHS_Upr_IB_pickup = Rotate_IB_point(RHS_Upr_IB_pickup,Roll_centre,Roll_step);
-    RHS_Lwr_IB_pickup = Rotate_IB_point(RHS_Lwr_IB_pickup,Roll_centre,Roll_step);
-    LHS_Upr_IB_pickup = Rotate_IB_point(LHS_Upr_IB_pickup,Roll_centre,Roll_step);
-    LHS_Lwr_IB_pickup = Rotate_IB_point(LHS_Lwr_IB_pickup,Roll_centre,Roll_step);
+    Sprung_COG = Move_IB_point(Sprung_COG,Movement_step);
+    RHS_Upr_IB_pickup = Move_IB_point(RHS_Upr_IB_pickup,Movement_step);
+    RHS_Lwr_IB_pickup = Move_IB_point(RHS_Lwr_IB_pickup,Movement_step);
+    LHS_Upr_IB_pickup = Move_IB_point(LHS_Upr_IB_pickup,Movement_step);
+    LHS_Lwr_IB_pickup = Move_IB_point(LHS_Lwr_IB_pickup,Movement_step);
     
     # From the new IB pickup points, find the new positions of the OB points.
-    RHS_Upr_OB_pickup = Rotate_OB(RHS_Upr_OB_pickup,Track,RHS_Upr_IB_pickup,UWB_length);
-    RHS_Lwr_OB_pickup = Rotate_OB(RHS_Lwr_OB_pickup,Track,RHS_Lwr_IB_pickup,LWB_length);
-    LHS_Upr_OB_pickup = Rotate_OB(LHS_Upr_OB_pickup,-Track,LHS_Upr_IB_pickup,UWB_length);
-    LHS_Lwr_OB_pickup = Rotate_OB(LHS_Lwr_OB_pickup,-Track,LHS_Lwr_IB_pickup,LWB_length);
+    RHS_Upr_OB_pickup = Find_OB(RHS_Upr_OB_pickup,Track,RHS_Upr_IB_pickup,UWB_length);
+    RHS_Lwr_OB_pickup = Find_OB(RHS_Lwr_OB_pickup,Track,RHS_Lwr_IB_pickup,LWB_length);
+    LHS_Upr_OB_pickup = Find_OB(LHS_Upr_OB_pickup,-Track,LHS_Upr_IB_pickup,UWB_length);
+    LHS_Lwr_OB_pickup = Find_OB(LHS_Lwr_OB_pickup,-Track,LHS_Lwr_IB_pickup,LWB_length);
     
-    Roll += Roll_step;
+    Sweep_param += Movement_step;
 
-
-
+# Append final values to the appropriate lists in order to plot graphs later
+Roll_centres.append((Roll_centre[0],Roll_centre[1]));
+COG_migration.append(Applied_bump - Sweep_size + Sweep_param);
+RHS_Scrub_radii.append(RHS_scrub_rad);
+LHS_Scrub_radii.append(LHS_scrub_rad);
+RHS_cambers.append(RHS_camber);
+LHS_cambers.append(LHS_camber);
 
 # Plot a graph of roll centres in absolute space;
 plt.scatter(*zip(*Roll_centres));
@@ -311,23 +335,15 @@ plt.ylabel("y-coordinate");
 plt.title("Absolute roll centre position");
 plt.show();
 
-# Plot a graph of roll_centre migration
-plt.scatter(*zip(*RC_migration));
-plt.grid();
-plt.xlabel("x migration");
-plt.ylabel("y migration");
-plt.title("Roll centre migration");
-plt.show();
-
 #Plot graphs for scrub radius vs roll
-plt.scatter(Roll_angles,LHS_Scrub_radii);
+plt.scatter(COG_migration,LHS_Scrub_radii);
 plt.grid();
 plt.xlabel("Applied roll angle");
 plt.ylabel("LHS scrub radius");
 plt.title("LHS scrub radius vs roll");
 plt.show();
 
-plt.scatter(Roll_angles,RHS_Scrub_radii);
+plt.scatter(COG_migration,RHS_Scrub_radii);
 plt.grid();
 plt.xlabel("Applied roll angle");
 plt.ylabel("LHS scrub radius");
@@ -335,17 +351,16 @@ plt.title("RHS scrub radius vs roll");
 plt.show();
 
 #Plot graphs for camber vs roll
-plt.scatter(Roll_angles,RHS_cambers);
+plt.scatter(COG_migration,RHS_cambers);
 plt.grid();
 plt.xlabel("Applied roll angle");
 plt.ylabel("RHS camber angle");
 plt.title("RHS camber angle vs roll");
 plt.show();
 
-plt.scatter(Roll_angles,LHS_cambers);
+plt.scatter(COG_migration,LHS_cambers);
 plt.grid();
 plt.xlabel("Applied roll angle");
 plt.ylabel("LHS camber angle");
 plt.title("LHS camber angle vs roll");
 plt.show();
-    
