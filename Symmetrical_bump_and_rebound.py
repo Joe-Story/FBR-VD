@@ -19,13 +19,14 @@ If you would like to request permission to use this intellectual property, pleas
 
 import math #Import math library;
 import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
+import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
 RHS_Upr_OB_pickup = [538.53,351]; #RHS Upper OB pickup point
 RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
-static_camber = 0; #In degrees
+static_camber = -2; #In degrees
 UWB_length = 234.254625; #Upper wishbone length in front view
 LWB_length = 418.9412262; #Lower wishbone length in front view
 UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
@@ -56,11 +57,31 @@ RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
 RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
 RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
 
-
 LHS_Upr_IB_pickup[0] = - RHS_Upr_IB_pickup[0];
 LHS_Upr_IB_pickup[1] = RHS_Upr_IB_pickup[1];
 LHS_Lwr_IB_pickup[0] = - RHS_Lwr_IB_pickup[0];
 LHS_Lwr_IB_pickup[1] = RHS_Lwr_IB_pickup[1];
+
+# Create wishbones, uprights, connection to contact patch
+RHS_Upr_WB = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
+RHS_Lwr_WB = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
+LHS_Upr_WB = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
+LHS_Lwr_WB = [LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup];
+RHS_upright = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
+LHS_upright = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup]; 
+
+RHS_wheel = [RHS_Lwr_OB_pickup, [Track/2,0]];
+LHS_wheel = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
+
+#Plot baseline geometry
+plt.plot(*zip(*RHS_Upr_WB), marker='x', color='b');
+plt.plot(*zip(*RHS_Lwr_WB), marker='x', color='b');
+plt.plot(*zip(*LHS_Upr_WB), marker='x', color='b');
+plt.plot(*zip(*LHS_Lwr_WB), marker='x', color='b');
+plt.plot(*zip(*RHS_upright), color='b');
+plt.plot(*zip(*LHS_upright), color='b');
+plt.plot(*zip(*RHS_wheel), color='b');
+plt.plot(*zip(*LHS_wheel), color='b')         
 
 #Function that finds the instantaneous centre. Abstraction allows for calling this function over and over again.(Keeps code clean)
 def Find_IC(Upr_OB,Upr_IB,Lwr_OB,Lwr_IB):
@@ -187,7 +208,7 @@ def Find_OB(OB_point,Track,IB_point,WB_rad):
     
     """ As we are iterating for each small rotation, intuitively we would expect that the closest point to
         the previous OB point is the correct solution. Whilst not the most robust way to do this, it is
-        the simplest to code. With more time, this approach may be changed in the future. """
+        the simplest to code and should not cause any issues. """
     
     # Start by finding the absollute distance between each solution and the old OB point.
     
@@ -226,13 +247,6 @@ LHS_kingpin_angle = Find_kingpin_angle(LHS_Upr_OB_pickup,LHS_Lwr_OB_pickup);
 # The angle between camber and kingpin is fixed so this allows us to find camber.
 camber_to_kingpin = RHS_camber - RHS_kingpin_angle;
 
-# Output the baseline roll centre
-RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
-LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
-Roll_centre_init = Find_RC(RHS_IC, LHS_IC, Track);
-print(Roll_centre_init);
-print("Baseline roll centre height is: " + str(round(Roll_centre[1],2)) + " mm.");
-
 """This is the main loop of the code"""
 
 #Initially, we move the geometry into the maximum Bump condition
@@ -270,6 +284,28 @@ while Sweep_param <= Applied_bump:
     
     Sweep_param += Movement_step;
     
+# Create wishbones, uprights, connection to contact patch in max bump
+RHS_Upr_WB_bump = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
+RHS_Lwr_WB_bump = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
+LHS_Upr_WB_bump = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
+LHS_Lwr_WB_bump = [LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup];
+RHS_upright_bump = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
+LHS_upright_bump = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup]; 
+
+RHS_wheel_bump = [RHS_Lwr_OB_pickup, [Track/2,0]];
+LHS_wheel_bump = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
+
+#Plot max bump geometry
+plt.plot(*zip(*RHS_Upr_WB_bump), marker='x', color='r');
+plt.plot(*zip(*RHS_Lwr_WB_bump), marker='x', color='r');
+plt.plot(*zip(*LHS_Upr_WB_bump), marker='x', color='r');
+plt.plot(*zip(*LHS_Lwr_WB_bump), marker='x', color='r');
+plt.plot(*zip(*RHS_upright_bump), color='r');
+plt.plot(*zip(*LHS_upright_bump), color='r');
+plt.plot(*zip(*RHS_wheel_bump), color='r');
+plt.plot(*zip(*LHS_wheel_bump), color='r');
+
+
 """ After moving the COG to its lowest expected point, we run through the whole sweep
     from maximum bump to maximum rebound."""
 
@@ -297,7 +333,7 @@ while Sweep_param < Sweep_size:
     
     # Append current values to the appropriate lists in order to plot graphs later
     Roll_centres.append((Roll_centre[0],Roll_centre[1]));
-    RC_migration.append((Roll_centre[0] - Roll_centre_init[0],Roll_centre[1] - Roll_centre_init[1]));
+    RC_migration.append((Roll_centre[0] - Roll_centres[0][0],Roll_centre[1] - Roll_centres[0][1]));
     COG_migration.append(Applied_bump - Sweep_size + Sweep_param);
     RHS_Scrub_radii.append(RHS_scrub_rad);
     LHS_Scrub_radii.append(LHS_scrub_rad);
@@ -326,6 +362,38 @@ RHS_Scrub_radii.append(RHS_scrub_rad);
 LHS_Scrub_radii.append(LHS_scrub_rad);
 RHS_cambers.append(RHS_camber);
 LHS_cambers.append(LHS_camber);
+
+# Create wishbones, uprights, connection to contact patch
+RHS_Upr_WB_reb = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
+RHS_Lwr_WB_reb = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
+LHS_Upr_WB_reb = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
+LHS_Lwr_WB_reb = [LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup];
+RHS_upright_reb = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
+LHS_upright_reb = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup]; 
+
+RHS_wheel_reb = [RHS_Lwr_OB_pickup, [Track/2,0]];
+LHS_wheel_reb = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
+
+#Plot Max rebound geometry
+plt.plot(*zip(*RHS_Upr_WB_reb), marker='x', color='y');
+plt.plot(*zip(*RHS_Lwr_WB_reb), marker='x', color='y');
+plt.plot(*zip(*LHS_Upr_WB_reb), marker='x', color='y');
+plt.plot(*zip(*LHS_Lwr_WB_reb), marker='x', color='y');
+plt.plot(*zip(*RHS_upright_reb), color='y');
+plt.plot(*zip(*LHS_upright_reb), color='y');
+plt.plot(*zip(*RHS_wheel_reb), color='y');
+plt.plot(*zip(*LHS_wheel_reb), color='y');
+blue = mpatches.Patch(color='blue', label='Baseline');
+red = mpatches.Patch(color='red', label='Maximum bump');
+yellow = mpatches.Patch(color='yellow', label='Maximum rebound');
+plt.legend(handles=[blue,red,yellow]);
+plt.xlim(-650,650);
+plt.ylim(0,400);
+plt.xlabel("x-coordinate");
+plt.ylabel("y-coordinate");
+plt.title("Geometry changes in bump");
+plt.show();
+
 
 # Plot a graph of roll centres in absolute space;
 plt.scatter(*zip(*Roll_centres));
@@ -364,3 +432,5 @@ plt.xlabel("Applied bump (rebound +ve)");
 plt.ylabel("LHS camber angle");
 plt.title("LHS camber angle vs bump");
 plt.show();
+
+

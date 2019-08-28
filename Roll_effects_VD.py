@@ -12,20 +12,21 @@ If you would like to request permission to use this intellectual property, pleas
 # This script will allow you to approximate roll-centre migration, camber changes and scrub radius
 # throughout a roll sweep.
 # This model is based on front view only.
-# Rotation (roll) is clockwise in the model
+# Rotation (roll) is clockwise in the model.
 # Caveat is that this is not infinitely accurate because the roll centre is dynamic but is only taken at discrete points
-# Another assumption is that there is 0% cross weight (i.e. COG is on the centreline when static)
 # The centre of the contact patch is assumed constant, on the wheel centreline at zero camber.
+# i.e. equivalent to halving the track.
 
 import math #Import math library;
 import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
+import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
 RHS_Upr_OB_pickup = [538.53,351]; #RHS Upper OB pickup point
 RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
-static_camber = 0; #In degrees
+static_camber = -2; #In degrees
 UWB_length = 234.254625; #Upper wishbone length in front view
 LWB_length = 418.9412262; #Lower wishbone length in front view
 UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
@@ -55,11 +56,31 @@ RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
 RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
 RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
 
-
 LHS_Upr_IB_pickup[0] = - RHS_Upr_IB_pickup[0];
 LHS_Upr_IB_pickup[1] = RHS_Upr_IB_pickup[1];
 LHS_Lwr_IB_pickup[0] = - RHS_Lwr_IB_pickup[0];
 LHS_Lwr_IB_pickup[1] = RHS_Lwr_IB_pickup[1];
+
+# Create wishbones, uprights, connection to contact patch
+RHS_Upr_WB = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
+RHS_Lwr_WB = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
+LHS_Upr_WB = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
+LHS_Lwr_WB = [LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup];
+RHS_upright = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
+LHS_upright = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup]; 
+
+RHS_wheel = [RHS_Lwr_OB_pickup, [Track/2,0]];
+LHS_wheel = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
+ 
+plt.plot(*zip(*RHS_Upr_WB), marker='x', color='b');
+plt.plot(*zip(*RHS_Lwr_WB), marker='x', color='b');
+plt.plot(*zip(*LHS_Upr_WB), marker='x', color='b');
+plt.plot(*zip(*LHS_Lwr_WB), marker='x', color='b');
+plt.plot(*zip(*RHS_upright), color='b');
+plt.plot(*zip(*LHS_upright), color='b');
+plt.plot(*zip(*RHS_wheel), color='b');
+plt.plot(*zip(*LHS_wheel), color='b')
+
 
 #Function that finds the instantaneous centre. Abstraction allows for calling this function over and over again.(Keeps code clean)
 def Find_IC(Upr_OB,Upr_IB,Lwr_OB,Lwr_IB):
@@ -210,7 +231,7 @@ def Rotate_OB(OB_point,Track,IB_point,WB_rad):
     
     """ As we are iterating for each small rotation, intuitively we would expect that the closest point to
         the previous OB point is the correct solution. Whilst not the most robust way to do this, it is
-        the simplest to code. With more time, this approach may be changed in the future. """
+        the simplest to code and should not cause any issues. """
     
     # Start by finding the absollute distance between each solution and the old OB point.
     
@@ -300,8 +321,36 @@ while Roll <= Applied_roll:
     
     Roll += Roll_step;
 
+#Save geometry at max roll
+RHS_Upr_WB_roll = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
+RHS_Lwr_WB_roll = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
+LHS_Upr_WB_roll = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
+LHS_Lwr_WB_roll = [LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup];
+RHS_upright_roll = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
+LHS_upright_roll = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup]; 
 
+RHS_wheel_roll = [RHS_Lwr_OB_pickup, [Track/2,0]];
+LHS_wheel_roll = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
 
+#Plot baseline geometry and deformed geometry
+
+plt.plot(*zip(*RHS_Upr_WB_roll), marker='x', color='r');
+plt.plot(*zip(*RHS_Lwr_WB_roll), marker='x', color='r');
+plt.plot(*zip(*LHS_Upr_WB_roll), marker='x', color='r');
+plt.plot(*zip(*LHS_Lwr_WB_roll), marker='x', color='r');
+plt.plot(*zip(*RHS_upright_roll), color='r');
+plt.plot(*zip(*LHS_upright_roll), color='r');
+plt.plot(*zip(*RHS_wheel_roll), color='r');
+plt.plot(*zip(*LHS_wheel_roll), color='r');
+blue = mpatches.Patch(color='blue', label='Baseline');
+red = mpatches.Patch(color='red', label='Maximum roll');
+plt.legend(handles=[blue,red]);
+plt.xlim(-650,650);
+plt.ylim(0,400);
+plt.xlabel("x-coordinate");
+plt.ylabel("y-coordinate");
+plt.title("Geometry changes");
+plt.show();
 
 # Plot a graph of roll centres in absolute space;
 plt.scatter(*zip(*Roll_centres));
@@ -348,4 +397,4 @@ plt.xlabel("Applied roll angle");
 plt.ylabel("LHS camber angle");
 plt.title("LHS camber angle vs roll");
 plt.show();
-    
+
