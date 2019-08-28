@@ -43,8 +43,8 @@ RHS_scrub_rad = 0; # This will be calculated later so the value is largely irrel
 LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 
 # Define the maximum amount of expected roll and the program will iterate up to this.
-Applied_bump = 30; #Maxmimum bump artificially applied to the car.
-Applied_rebound = 20; #Maximum rebound artificially applied to the car.
+Applied_bump = 35; #Maxmimum bump artificially applied to the car.
+Applied_rebound = 35; #Maximum rebound artificially applied to the car.
 Sweep_param = 0 #Initial counting parameter for the sweep is set to zero.
 
 # Convert degrees to radians for math library.
@@ -65,23 +65,15 @@ LHS_Lwr_IB_pickup[1] = RHS_Lwr_IB_pickup[1];
 # Create wishbones, uprights, connection to contact patch
 RHS_Upr_WB = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
 RHS_Lwr_WB = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
-LHS_Upr_WB = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
-LHS_Lwr_WB = [LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup];
 RHS_upright = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
-LHS_upright = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup]; 
 
-RHS_wheel = [RHS_Lwr_OB_pickup, [Track/2,0]];
-LHS_wheel = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
+RHS_wheel = [RHS_Lwr_OB_pickup, [Track/2,0]]; 
 
 #Plot baseline geometry
 plt.plot(*zip(*RHS_Upr_WB), marker='x', color='b');
 plt.plot(*zip(*RHS_Lwr_WB), marker='x', color='b');
-plt.plot(*zip(*LHS_Upr_WB), marker='x', color='b');
-plt.plot(*zip(*LHS_Lwr_WB), marker='x', color='b');
 plt.plot(*zip(*RHS_upright), color='b');
-plt.plot(*zip(*LHS_upright), color='b');
-plt.plot(*zip(*RHS_wheel), color='b');
-plt.plot(*zip(*LHS_wheel), color='b')         
+plt.plot(*zip(*RHS_wheel), color='b');   
 
 #Function that finds the instantaneous centre. Abstraction allows for calling this function over and over again.(Keeps code clean)
 def Find_IC(Upr_OB,Upr_IB,Lwr_OB,Lwr_IB):
@@ -138,18 +130,16 @@ def Find_scrub_rad(Upr_OB,Lwr_OB,Track):
 
 #Function that finds the kingpin angle, given the OB pickup points.
 def Find_kingpin_angle(Upr_OB_point,Lwr_OB_point):
-    """Needs Checking"""
+    
     # Find the x and y distances between the OB points. Using trigonoetry, this gives us the kingpin angle.
-    dx = abs(Lwr_OB_point[0]) - abs(Upr_OB_point[0]);
+    dx = -(abs(Lwr_OB_point[0]) - abs(Upr_OB_point[0]));
     dy = Upr_OB_point[1] - Lwr_OB_point[1];
-    
-    
     
     # The kingpin angle is the arctan(dx/dy)
     if dy != 0: 
         angle = math.atan(dx/dy);
     else:
-        angle = math.pi/2;
+        angle = 0
     angle = angle * 180 / math.pi
     
     return angle
@@ -287,23 +277,15 @@ while Sweep_param <= Applied_bump:
 # Create wishbones, uprights, connection to contact patch in max bump
 RHS_Upr_WB_bump = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
 RHS_Lwr_WB_bump = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
-LHS_Upr_WB_bump = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
-LHS_Lwr_WB_bump = [LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup];
-RHS_upright_bump = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
-LHS_upright_bump = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup]; 
+RHS_upright_bump = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup]; 
 
-RHS_wheel_bump = [RHS_Lwr_OB_pickup, [Track/2,0]];
-LHS_wheel_bump = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
+RHS_wheel_bump = [RHS_Lwr_OB_pickup, [Track/2,0]]; 
 
 #Plot max bump geometry
 plt.plot(*zip(*RHS_Upr_WB_bump), marker='x', color='r');
 plt.plot(*zip(*RHS_Lwr_WB_bump), marker='x', color='r');
-plt.plot(*zip(*LHS_Upr_WB_bump), marker='x', color='r');
-plt.plot(*zip(*LHS_Lwr_WB_bump), marker='x', color='r');
 plt.plot(*zip(*RHS_upright_bump), color='r');
-plt.plot(*zip(*LHS_upright_bump), color='r');
 plt.plot(*zip(*RHS_wheel_bump), color='r');
-plt.plot(*zip(*LHS_wheel_bump), color='r');
 
 
 """ After moving the COG to its lowest expected point, we run through the whole sweep
@@ -359,35 +341,25 @@ while Sweep_param < Sweep_size:
 Roll_centres.append((Roll_centre[0],Roll_centre[1]));
 COG_migration.append(Applied_bump - Sweep_size + Sweep_param);
 RHS_Scrub_radii.append(RHS_scrub_rad);
-LHS_Scrub_radii.append(LHS_scrub_rad);
 RHS_cambers.append(RHS_camber);
-LHS_cambers.append(LHS_camber);
 
 # Create wishbones, uprights, connection to contact patch
 RHS_Upr_WB_reb = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
 RHS_Lwr_WB_reb = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
-LHS_Upr_WB_reb = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
-LHS_Lwr_WB_reb = [LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup];
 RHS_upright_reb = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
-LHS_upright_reb = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup]; 
 
-RHS_wheel_reb = [RHS_Lwr_OB_pickup, [Track/2,0]];
-LHS_wheel_reb = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
+RHS_wheel_reb = [RHS_Lwr_OB_pickup, [Track/2,0]]; 
 
 #Plot Max rebound geometry
 plt.plot(*zip(*RHS_Upr_WB_reb), marker='x', color='y');
 plt.plot(*zip(*RHS_Lwr_WB_reb), marker='x', color='y');
-plt.plot(*zip(*LHS_Upr_WB_reb), marker='x', color='y');
-plt.plot(*zip(*LHS_Lwr_WB_reb), marker='x', color='y');
 plt.plot(*zip(*RHS_upright_reb), color='y');
-plt.plot(*zip(*LHS_upright_reb), color='y');
 plt.plot(*zip(*RHS_wheel_reb), color='y');
-plt.plot(*zip(*LHS_wheel_reb), color='y');
 blue = mpatches.Patch(color='blue', label='Baseline');
 red = mpatches.Patch(color='red', label='Maximum bump');
 yellow = mpatches.Patch(color='yellow', label='Maximum rebound');
 plt.legend(handles=[blue,red,yellow]);
-plt.xlim(-650,650);
+plt.xlim(75,650);
 plt.ylim(0,400);
 plt.xlabel("x-coordinate");
 plt.ylabel("y-coordinate");
@@ -403,19 +375,14 @@ plt.ylabel("y-coordinate");
 plt.title("Absolute roll centre position");
 plt.show();
 
-#Plot graphs for scrub radius vs roll
-plt.scatter(COG_migration,LHS_Scrub_radii);
-plt.grid();
-plt.xlabel("Applied bump (rebound +ve)");
-plt.ylabel("LHS scrub radius");
-plt.title("LHS scrub radius vs bump");
+#Plot graphs for scrub radius vs roll scrub radius vs bump");
 plt.show();
 
 plt.scatter(COG_migration,RHS_Scrub_radii);
 plt.grid();
 plt.xlabel("Applied bump (rebound +ve)");
 plt.ylabel("LHS scrub radius");
-plt.title("RHS scrub radius vs bump");
+plt.title("Scrub radius vs bump");
 plt.show();
 
 #Plot graphs for camber vs roll
@@ -423,14 +390,6 @@ plt.scatter(COG_migration,RHS_cambers);
 plt.grid();
 plt.xlabel("Applied bump (rebound +ve)");
 plt.ylabel("RHS camber angle");
-plt.title("RHS camber angle vs bump");
+plt.title("Camber angle vs bump");
 plt.show();
-
-plt.scatter(COG_migration,LHS_cambers);
-plt.grid();
-plt.xlabel("Applied bump (rebound +ve)");
-plt.ylabel("LHS camber angle");
-plt.title("LHS camber angle vs bump");
-plt.show();
-
 
