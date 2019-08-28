@@ -270,11 +270,17 @@ LHS_kingpin_angle = Find_kingpin_angle(LHS_Upr_OB_pickup,LHS_Lwr_OB_pickup);
 # The angle between camber and kingpin is fixed so this allows us to find camber.
 camber_to_kingpin = RHS_camber - RHS_kingpin_angle;
 
+# Output the baseline kingpin angle and scrub radius.
+print(("Baseline kingpin angle is: " + str(round(RHS_kingpin_angle,2)) + "˚."));
+RHS_scrub_rad = Find_scrub_rad(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,Track);
+print("Baseline scrub radius is: " + str(round(RHS_scrub_rad,2)) + " mm.");
+
 # Output the baseline roll centre
 RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
 LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
 Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);
 print("Baseline roll centre height is: " + str(round(Roll_centre[1],2)) + " mm.");
+
 
 
 """This is the main loop of the code"""
@@ -321,7 +327,7 @@ while Roll <= Applied_roll:
     
     Roll += Roll_step;
 
-#Save geometry at max roll
+#Save geometry at max roll.
 RHS_Upr_WB_roll = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
 RHS_Lwr_WB_roll = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
 LHS_Upr_WB_roll = [LHS_Upr_OB_pickup,LHS_Upr_IB_pickup];
@@ -332,8 +338,7 @@ LHS_upright_roll = [LHS_Lwr_OB_pickup, LHS_Upr_OB_pickup];
 RHS_wheel_roll = [RHS_Lwr_OB_pickup, [Track/2,0]];
 LHS_wheel_roll = [LHS_Lwr_OB_pickup, [-Track/2,0]]; 
 
-#Plot baseline geometry and deformed geometry
-
+#Plot baseline geometry and deformed geometry.
 plt.plot(*zip(*RHS_Upr_WB_roll), marker='x', color='r');
 plt.plot(*zip(*RHS_Lwr_WB_roll), marker='x', color='r');
 plt.plot(*zip(*LHS_Upr_WB_roll), marker='x', color='r');
