@@ -400,4 +400,3 @@ plt.xlabel("Applied roll angle");
 plt.ylabel("LHS camber angle");
 plt.title("LHS camber angle vs roll");
 plt.show();
-

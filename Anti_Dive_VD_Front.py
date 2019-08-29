@@ -14,8 +14,10 @@ If you would like to request permission to use this intellectual property, pleas
 
 import math #Import math library;
 
-#Define key parameters
+#Coordinates are x to the back of the car, y upwards
 Contact_Patch = [0,0] #Contact patch is the origin of the x, y coordinate system
+
+#Define key parameters
 COM = [700,500]
 LHS_Lwr_Front_IB = [-300,400]
 LHS_Lwr_Angle_deg = 5
@@ -48,3 +50,5 @@ m_resultant = (intersect[1]/intersect[0])
 perc_anti_dive = ((m_resultant*COM[0])/COM[1])*100
 
 print ("The percentage of anti-dive is:", perc_anti_dive, "%")
+
+#Add script to plot lines
