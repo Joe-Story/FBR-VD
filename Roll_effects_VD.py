@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jul 30 20:07:37 2019
-
 @author: ryan
-
 This script is property of Ryan Wilkins and it is intended solely for use by Full Blue Racing.
 If you would like to request permission to use this intellectual property, please contact ryan.wilkins@fullblueracing.co.uk
 """
@@ -22,17 +20,17 @@ import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [538.53,351]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [538.53,335]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [564.85,180]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -1.5; #In degrees
-UWB_length = 234.254625; #Upper wishbone length in front view
-LWB_length = 418.9412262; #Lower wishbone length in front view
-UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
-LWB_angle = -7.910191806; #Lower wishbone angle to horizontal. Anti-clockwise positive
-RHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Upr IB pickup point.
-RHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Lwr IB pickup point.
+#UWB_length = 234.254625; #Upper wishbone length in front view
+#LWB_length = 418.9412262; #Lower wishbone length in front view
+#UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
+#LWB_angle = -7.910191806; #Lower wishbone angle to horizontal. Anti-clockwise positive
+RHS_Upr_IB_pickup = [160,350]; #Create empty coordinate set for RHS Upr IB pickup point.
+RHS_Lwr_IB_pickup = [200,190]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
 LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup point.
 Track = 1200; #Total track width
@@ -48,14 +46,18 @@ Applied_roll = 3; #Roll artificially applied to the car
 Roll = 0; #Initial roll
 
 # Convert degrees to radians for math library.
-UWB_angle = UWB_angle*math.pi/180;
-LWB_angle = LWB_angle*math.pi/180;
+#UWB_angle = UWB_angle*math.pi/180;
+#LWB_angle = LWB_angle*math.pi/180;
 
 # Calculate IB pickup points from existing defined geometry
-RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
-RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
-RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
-RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
+#RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
+#RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
+#RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
+#RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
+
+"""Artificially added"""
+UWB_length = math.sqrt((RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])**2 + (RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])**2);
+LWB_length = math.sqrt((RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])**2 + (RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])**2);
 
 LHS_Upr_IB_pickup[0] = - RHS_Upr_IB_pickup[0];
 LHS_Upr_IB_pickup[1] = RHS_Upr_IB_pickup[1];
@@ -400,4 +402,3 @@ plt.xlabel("Applied roll angle");
 plt.ylabel("LHS camber angle");
 plt.title("LHS camber angle vs roll");
 plt.show();
-
