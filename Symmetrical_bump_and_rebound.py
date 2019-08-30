@@ -27,12 +27,12 @@ RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -2; #In degrees
-UWB_length = 234.254625; #Upper wishbone length in front view
-LWB_length = 418.9412262; #Lower wishbone length in front view
-UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
-LWB_angle = -7.910191806; #Lower wishbone angle to horizontal. Anti-clockwise positive
-RHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Upr IB pickup point.
-RHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Lwr IB pickup point.
+#UWB_length = 234.254625; #Upper wishbone length in front view
+#LWB_length = 418.9412262; #Lower wishbone length in front view
+#UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
+#LWB_angle = -7.910191806; #Lower wishbone angle to horizontal. Anti-clockwise positive
+RHS_Upr_IB_pickup = [304.29,335]; #Create empty coordinate set for RHS Upr IB pickup point.
+RHS_Lwr_IB_pickup = [149.9,192]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
 LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup point.
 Track = 1200; #Total track width
@@ -48,14 +48,14 @@ Applied_rebound = 35; #Maximum rebound artificially applied to the car.
 Sweep_param = 0 #Initial counting parameter for the sweep is set to zero.
 
 # Convert degrees to radians for math library.
-UWB_angle = UWB_angle*math.pi/180;
-LWB_angle = LWB_angle*math.pi/180;
+#UWB_angle = UWB_angle*math.pi/180;
+#LWB_angle = LWB_angle*math.pi/180;
 
 # Calculate IB pickup points from existing defined geometry
-RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
-RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
-RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
-RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
+#RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
+#RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
+#RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
+#RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
 
 LHS_Upr_IB_pickup[0] = - RHS_Upr_IB_pickup[0];
 LHS_Upr_IB_pickup[1] = RHS_Upr_IB_pickup[1];
