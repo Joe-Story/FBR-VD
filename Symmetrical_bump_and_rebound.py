@@ -22,17 +22,17 @@ import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [538.53,351]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [538.53,315]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [564.85,130]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
-static_camber = -2; #In degrees
-#UWB_length = 234.254625; #Upper wishbone length in front view
-#LWB_length = 418.9412262; #Lower wishbone length in front view
-#UWB_angle = 0.6408328324; #Upper wishbone angle to horizontal. Anti-clockwise positive
-#LWB_angle = -7.910191806; #Lower wishbone angle to horizontal. Anti-clockwise positive
-RHS_Upr_IB_pickup = [304.29,335]; #Create empty coordinate set for RHS Upr IB pickup point.
-RHS_Lwr_IB_pickup = [149.9,192]; #Create empty coordinate set for RHS Lwr IB pickup point.
+static_camber = -1.5; #In degrees
+UWB_length = 264.8; #Upper wishbone length in front view
+LWB_length = 354.94; #Lower wishbone length in front view
+UWB_angle = 25.739629449782196; #Upper wishbone angle to horizontal. Anti-clockwise positive
+LWB_angle = 9.732215290781069; #Lower wishbone angle to horizontal. Anti-clockwise positive
+RHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Upr IB pickup point.
+RHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
 LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup point.
 Track = 1200; #Total track width
@@ -42,25 +42,35 @@ Movement_step = 0.1; #Add a small amount of roll with each iteration. The smalle
 RHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 
-# Define the maximum amount of expected roll and the program will iterate up to this.
+# Define the maximum amount of expected bump/rebound and the program will iterate up to this.
 Applied_bump = 35; #Maxmimum bump artificially applied to the car.
 Applied_rebound = 35; #Maximum rebound artificially applied to the car.
 Sweep_param = 0 #Initial counting parameter for the sweep is set to zero.
 
 # Convert degrees to radians for math library.
-#UWB_angle = UWB_angle*math.pi/180;
-#LWB_angle = LWB_angle*math.pi/180;
+UWB_angle = UWB_angle*math.pi/180;
+LWB_angle = LWB_angle*math.pi/180;
 
 # Calculate IB pickup points from existing defined geometry
-#RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
-#RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
-#RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
-#RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
+RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
+RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
+RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
+RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
+
+"""Artificially added"""
+#UWB_length = math.sqrt((RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])**2 + (RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])**2);
+#LWB_length = math.sqrt((RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])**2 + (RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])**2);
+#UWB_angle = (math.atan((RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])/(RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])))*180/math.pi;
+#LWB_angle = (math.atan((RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])/(RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])))*180/math.pi;
 
 LHS_Upr_IB_pickup[0] = - RHS_Upr_IB_pickup[0];
 LHS_Upr_IB_pickup[1] = RHS_Upr_IB_pickup[1];
 LHS_Lwr_IB_pickup[0] = - RHS_Lwr_IB_pickup[0];
 LHS_Lwr_IB_pickup[1] = RHS_Lwr_IB_pickup[1];
+
+""" Artificially added"""
+#print(round(UWB_length,2), round(LWB_length,2));
+#print(UWB_angle,LWB_angle);
 
 # Create wishbones, uprights, connection to contact patch
 RHS_Upr_WB = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
