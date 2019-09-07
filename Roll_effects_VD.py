@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [538.53,315]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [564.85,130]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [538.53,355]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [564.85,140]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -1.5; #In degrees

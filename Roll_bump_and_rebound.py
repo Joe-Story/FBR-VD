@@ -20,17 +20,17 @@ import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [538.53,315]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [564.85,130]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [528,355]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [565,140]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -1.5; #In degrees
-UWB_length = 264.8; #Upper wishbone length in front view
-LWB_length = 354.94; #Lower wishbone length in front view
-UWB_angle = 25.739629449782196; #Upper wishbone angle to horizontal. Anti-clockwise positive
-LWB_angle = 9.732215290781069; #Lower wishbone angle to horizontal. Anti-clockwise positive
-RHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Upr IB pickup point.
-RHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Lwr IB pickup point.
+#UWB_length = 264.8; #Upper wishbone length in front view
+#LWB_length = 354.94; #Lower wishbone length in front view
+#UWB_angle = 25.739629449782196; #Upper wishbone angle to horizontal. Anti-clockwise positive
+#LWB_angle = 9.732215290781069; #Lower wishbone angle to horizontal. Anti-clockwise positive
+RHS_Upr_IB_pickup = [305,260]; #Create empty coordinate set for RHS Upr IB pickup point.
+RHS_Lwr_IB_pickup = [215,90]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
 LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup point.
 Track = 1200; #Total track width
@@ -55,20 +55,20 @@ Sweep_param = 0 #Initial counting parameter for the sweep is set to zero.
 Movement_step = 0.1; #Add a small amount of roll with each iteration. The smaller this is, the more accurate it will be but will take longer to run.
 
 # Convert degrees to radians for math library.
-UWB_angle = UWB_angle*math.pi/180;
-LWB_angle = LWB_angle*math.pi/180;
+#UWB_angle = UWB_angle*math.pi/180;
+#LWB_angle = LWB_angle*math.pi/180;
 
 # Calculate IB pickup points from existing defined geometry
-RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
-RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
-RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
-RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
+#RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
+#RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
+#RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
+#RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
 
 """Artificially added"""
-#UWB_length = math.sqrt((RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])**2 + (RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])**2);
-#LWB_length = math.sqrt((RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])**2 + (RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])**2);
-#UWB_angle = (math.atan((RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])/(RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])))*180/math.pi;
-#LWB_angle = (math.atan((RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])/(RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])))*180/math.pi;
+UWB_length = math.sqrt((RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])**2 + (RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])**2);
+LWB_length = math.sqrt((RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])**2 + (RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])**2);
+UWB_angle = (math.atan((RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])/(RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])))*180/math.pi;
+LWB_angle = (math.atan((RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])/(RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])))*180/math.pi;
 
 LHS_Upr_IB_pickup[0] = - RHS_Upr_IB_pickup[0];
 LHS_Upr_IB_pickup[1] = RHS_Upr_IB_pickup[1];
