@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [528,355]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [565,140]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [538.53,351]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -1.5; #In degrees
@@ -29,8 +29,8 @@ static_camber = -1.5; #In degrees
 #LWB_length = 354.94; #Lower wishbone length in front view
 #UWB_angle = 25.739629449782196; #Upper wishbone angle to horizontal. Anti-clockwise positive
 #LWB_angle = 9.732215290781069; #Lower wishbone angle to horizontal. Anti-clockwise positive
-RHS_Upr_IB_pickup = [305,260]; #Create empty coordinate set for RHS Upr IB pickup point.
-RHS_Lwr_IB_pickup = [215,90]; #Create empty coordinate set for RHS Lwr IB pickup point.
+RHS_Upr_IB_pickup = [304.29,348.28]; #Create empty coordinate set for RHS Upr IB pickup point.
+RHS_Lwr_IB_pickup = [149.896,229.15]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
 LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup point.
 Track = 1200; #Total track width
@@ -38,11 +38,11 @@ Sprung_COG = [0,276.3666667]; #Static sprung mass COG. This will move as the car
 Roll_centre = [0,0] #This will not be used at the given value, but will be calculated later.
 Roll_step = 0.001; #Add a small amount of roll with each iteration. The smaller this is, the more accurate it will be but will take longer to run.
 RHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
-#LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
+LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 #Tyre_rad = 256.5; #Tyre radius in mm, will be used to find contact patch centre. Current tyre is 256.5 mm rad.
 
 """Store baseline variables"""
-bsl_variables = (RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_IB_pickup);
+bsl_variables = (RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,(RHS_Upr_IB_pickup[0],RHS_Upr_IB_pickup[1]),(RHS_Lwr_IB_pickup[0],RHS_Lwr_IB_pickup[1]));
 
 # Define the maximum amount of expected roll and the program will iterate up to this.
 Applied_roll = 3; #Roll artificially applied to the car
@@ -271,7 +271,6 @@ def Find_OB(OB_point,Track,IB_point,WB_rad):
     
     return New_OB_point
     
-    
 
 # Create lists to hold the roll centre coordinates, roll angles, scrub radii and wheel camber
 Roll_centres = [];
@@ -430,8 +429,10 @@ plt.show();
 # Return to baseline geometry
 RHS_Upr_OB_pickup = bsl_variables[0];
 RHS_Lwr_OB_pickup = bsl_variables[1];
-RHS_Upr_IB_pickup = bsl_variables[2];
-RHS_Lwr_IB_pickup = bsl_variables[3];
+RHS_Upr_IB_pickup[0] = bsl_variables[2][0];
+RHS_Upr_IB_pickup[1] = bsl_variables[2][1];
+RHS_Lwr_IB_pickup[0] = bsl_variables[3][0];
+RHS_Lwr_IB_pickup[1] = bsl_variables[3][1];
 LHS_Upr_IB_pickup = [- RHS_Upr_IB_pickup[0],RHS_Upr_IB_pickup[1]];
 LHS_Lwr_IB_pickup = [- RHS_Lwr_IB_pickup[0],RHS_Lwr_IB_pickup[1]];
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]];
@@ -541,7 +542,6 @@ while Sweep_param < Sweep_size:
     LHS_scrub_rad = Find_scrub_rad(LHS_Upr_OB_pickup,LHS_Lwr_OB_pickup,Track);
     RHS_kingpin_angle = Find_kingpin_angle(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup);
     LHS_kingpin_angle = Find_kingpin_angle(LHS_Upr_OB_pickup,LHS_Lwr_OB_pickup);
-    
     
     #From the kingpin angles, we can find camber.
     RHS_camber = Find_camber(camber_to_kingpin,RHS_kingpin_angle);
