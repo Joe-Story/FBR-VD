@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [538.53,351]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [564.85,171.5]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [528.53,355]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [564.85,140]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -1.5; #In degrees
@@ -29,8 +29,8 @@ static_camber = -1.5; #In degrees
 #LWB_length = 354.94; #Lower wishbone length in front view
 #UWB_angle = 25.739629449782196; #Upper wishbone angle to horizontal. Anti-clockwise positive
 #LWB_angle = 9.732215290781069; #Lower wishbone angle to horizontal. Anti-clockwise positive
-RHS_Upr_IB_pickup = [304.29,348.28]; #Create empty coordinate set for RHS Upr IB pickup point.
-RHS_Lwr_IB_pickup = [149.896,229.15]; #Create empty coordinate set for RHS Lwr IB pickup point.
+RHS_Upr_IB_pickup = [300,285]; #Create empty coordinate set for RHS Upr IB pickup point.
+RHS_Lwr_IB_pickup = [215,110]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
 LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup point.
 Track = 1200; #Total track width
