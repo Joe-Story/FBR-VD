@@ -34,4 +34,4 @@ Top Back Mount: x=-1527.59mm, y=346.76mm, z=-327.13mm
 Bottom Front Mount: x=-1125.96mm, y=135.11mm, z=-241.17mm
 Bottom Back Mount: x=-1487.74mm, y=135.04mm, z=-241.14mm
 
-x is towards the front, y is upwards, z is to the right of the vehicle (but the z origin is fucking miles away to the left lol)
+x is towards the front, y is upwards, z is to the right of the vehicle (but the z origin is miles away to the left lol)
