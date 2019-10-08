@@ -25,12 +25,12 @@ RHS_Lwr_OB_pickup = [564.85,140]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -1.5; #In degrees
-#UWB_length = 264.8; #Upper wishbone length in front view
-#LWB_length = 354.94; #Lower wishbone length in front view
-#UWB_angle = 25.739629449782196; #Upper wishbone angle to horizontal. Anti-clockwise positive
-#LWB_angle = 9.732215290781069; #Lower wishbone angle to horizontal. Anti-clockwise positive
-RHS_Upr_IB_pickup = [305,290]; #Create empty coordinate set for RHS Upr IB pickup point.
-RHS_Lwr_IB_pickup = [215,110]; #Create empty coordinate set for RHS Lwr IB pickup point.
+UWB_length = 231.442565; #Upper wishbone length in front view
+LWB_length = 353.1339096; #Lower wishbone length in front view
+UWB_angle = 15.02518383; #Upper wishbone angle to horizontal. Anti-clockwise positive
+LWB_angle = 4.301182735; #Lower wishbone angle to horizontal. Anti-clockwise positive
+RHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Upr IB pickup point.
+RHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
 LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup point.
 Track = 1200; #Total track width
@@ -41,8 +41,6 @@ RHS_scrub_rad = 0; # This will be calculated later so the value is largely irrel
 LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 #Tyre_rad = 256.5; #Tyre radius in mm, will be used to find contact patch centre. Current tyre is 256.5 mm rad.
 
-"""Store baseline variables"""
-bsl_variables = (RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,(RHS_Upr_IB_pickup[0],RHS_Upr_IB_pickup[1]),(RHS_Lwr_IB_pickup[0],RHS_Lwr_IB_pickup[1]));
 
 # Define the maximum amount of expected roll and the program will iterate up to this.
 Applied_roll = 3; #Roll artificially applied to the car
@@ -55,20 +53,20 @@ Sweep_param = 0 #Initial counting parameter for the sweep is set to zero.
 Movement_step = 0.1; #Add a small amount of roll with each iteration. The smaller this is, the more accurate it will be but will take longer to run.
 
 # Convert degrees to radians for math library.
-#UWB_angle = UWB_angle*math.pi/180;
-#LWB_angle = LWB_angle*math.pi/180;
+UWB_angle = UWB_angle*math.pi/180;
+LWB_angle = LWB_angle*math.pi/180;
 
 # Calculate IB pickup points from existing defined geometry
-#RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
-#RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
-#RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
-#RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
+RHS_Upr_IB_pickup[0] = RHS_Upr_OB_pickup[0] - (UWB_length*math.cos(UWB_angle));
+RHS_Upr_IB_pickup[1] = RHS_Upr_OB_pickup[1] - (UWB_length*math.sin(UWB_angle));
+RHS_Lwr_IB_pickup[0] = RHS_Lwr_OB_pickup[0] - (LWB_length*math.cos(LWB_angle));
+RHS_Lwr_IB_pickup[1] = RHS_Lwr_OB_pickup[1] - (LWB_length*math.sin(LWB_angle));
 
 """Artificially added"""
-UWB_length = math.sqrt((RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])**2 + (RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])**2);
-LWB_length = math.sqrt((RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])**2 + (RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])**2);
-UWB_angle = (math.atan((RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])/(RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])))*180/math.pi;
-LWB_angle = (math.atan((RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])/(RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])))*180/math.pi;
+#UWB_length = math.sqrt((RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])**2 + (RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])**2);
+#LWB_length = math.sqrt((RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])**2 + (RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])**2);
+#UWB_angle = (math.atan((RHS_Upr_OB_pickup[1] - RHS_Upr_IB_pickup[1])/(RHS_Upr_OB_pickup[0] - RHS_Upr_IB_pickup[0])))*180/math.pi;
+#LWB_angle = (math.atan((RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1])/(RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0])))*180/math.pi;
 
 LHS_Upr_IB_pickup[0] = - RHS_Upr_IB_pickup[0];
 LHS_Upr_IB_pickup[1] = RHS_Upr_IB_pickup[1];
@@ -79,6 +77,8 @@ LHS_Lwr_IB_pickup[1] = RHS_Lwr_IB_pickup[1];
 #print(round(UWB_length,2), round(LWB_length,2));
 #print(UWB_angle,LWB_angle);
 
+"""Store baseline variables"""
+bsl_variables = (RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,(RHS_Upr_IB_pickup[0],RHS_Upr_IB_pickup[1]),(RHS_Lwr_IB_pickup[0],RHS_Lwr_IB_pickup[1]));
 
 # Create wishbones, uprights, connection to contact patch
 RHS_Upr_WB = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
