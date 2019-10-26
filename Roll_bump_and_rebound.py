@@ -20,15 +20,15 @@ import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
 import matplotlib.patches as mpatches;
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [528.53,355]; #RHS Upper OB pickup point
-RHS_Lwr_OB_pickup = [564.85,140]; #RHS Lower OB pickup point
+RHS_Upr_OB_pickup = [528.53,310]; #RHS Upper OB pickup point
+RHS_Lwr_OB_pickup = [564.85,130]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
-static_camber = -1.5; #In degrees
-UWB_length = 231.442565; #Upper wishbone length in front view
-LWB_length = 353.1339096; #Lower wishbone length in front view
-UWB_angle = 15.02518383; #Upper wishbone angle to horizontal. Anti-clockwise positive
-LWB_angle = 4.301182735; #Lower wishbone angle to horizontal. Anti-clockwise positive
+static_camber = -1.0; #In degrees
+UWB_length = 205; #Upper wishbone length in front view
+LWB_length = 320; #Lower wishbone length in front view
+UWB_angle = 10; #Upper wishbone angle to horizontal. Anti-clockwise positive
+LWB_angle = 2; #Lower wishbone angle to horizontal. Anti-clockwise positive
 RHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Upr IB pickup point.
 RHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for RHS Lwr IB pickup point.
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
@@ -100,6 +100,9 @@ plt.plot(*zip(*LHS_upright), color='b');
 plt.plot(*zip(*RHS_wheel), color='b');
 plt.plot(*zip(*LHS_wheel), color='b')
 
+
+print(RHS_Upr_IB_pickup);
+print(RHS_Lwr_IB_pickup);
 
 #Function that finds the instantaneous centre. Abstraction allows for calling this function over and over again.(Keeps code clean)
 def Find_IC(Upr_OB,Upr_IB,Lwr_OB,Lwr_IB):
