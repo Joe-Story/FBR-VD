@@ -17,16 +17,16 @@ If you would like to request permission to use this intellectual property, pleas
 
 import math #Import math library;
 import matplotlib.pyplot as plt; # Import matplotlib for plotting graphs
-import matplotlib.patches as mpatches;
+import numpy as np
 
 # Define key parameters. All length parameters / coordinates in mm.
-RHS_Upr_OB_pickup = [528.53,355]; #RHS Upper OB pickup point
+RHS_Upr_OB_pickup = [528.53,368]; #RHS Upper OB pickup point
 RHS_Lwr_OB_pickup = [564.85,140]; #RHS Lower OB pickup point
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -1.5; #In degrees
-RHS_Upr_IB_pickup = [305, 295]; #RHS Upper IB pickup point
-RHS_Lwr_IB_pickup = [212.71, 113.52]; #RHS Lower IB pickup point
+RHS_Upr_IB_pickup = [308.4991052451646, 329.1028894753635]; #RHS Upper IB pickup point
+RHS_Lwr_IB_pickup = [208.93360212033411, 127.54636728580483]; #RHS Lower IB pickup point
 LHS_Upr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Upr IB pickup point.
 LHS_Lwr_IB_pickup = [0,0]; #Create empty coordinate set for LHS Lwr IB pickup point.
 Track = 1200; #Total track width
@@ -38,10 +38,22 @@ LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrel
 #Tyre_rad = 256.5; #Tyre radius in mm, will be used to find contact patch centre. Current tyre is 256.5 mm rad.
 
 
-Damper_IB = [0,0];
-Damper_OB = [0,0];
+Damper_IB = [189.7,569.3];
+Damper_OB = [494.2,157.5];
 
-Damper_length = math.sqrt((Damper_IB[0] - Damper_OB[0])**2 + (Damper_IB[1] - Damper_OB[1])**2)
+# Find baseline damper length 
+bsl_damper_length = math.sqrt((Damper_IB[0] - Damper_OB[0])**2 + (Damper_IB[1] - Damper_OB[1])**2)
+print(bsl_damper_length)
+
+# Find point P in baseline position and use this to find parallel and perpendicular distance of damper mount to the wishbone
+damper_vector = np.array([Damper_OB[0] - RHS_Lwr_OB_pickup[0], Damper_OB[1] - RHS_Lwr_OB_pickup[1]] )
+wb_vector = np.array([RHS_Lwr_IB_pickup[0] - RHS_Lwr_OB_pickup[0], RHS_Lwr_IB_pickup[1] - RHS_Lwr_OB_pickup[1]])
+d_parallel = np.dot(wb_vector,damper_vector)/np.dot(wb_vector,wb_vector)
+P_vector = wb_vector * d_parallel
+P = [RHS_Lwr_OB_pickup[0] + P_vector[0] , RHS_Lwr_OB_pickup[1] + P_vector[1]]
+perpendicular_vector = [Damper_OB[0] - P[0] , Damper_OB[1] - P[1]]
+d_perpendicular = math.sqrt(perpendicular_vector[0]**2 + perpendicular_vector[1]**2)
+d_parallel = math.sqrt(P_vector[0]**2 + P_vector[1]**2)
 
 dv_max = 30 #maximum tyre displacement in mm
 
@@ -58,8 +70,8 @@ LHS_Lwr_IB_pickup[0] = - RHS_Lwr_IB_pickup[0];
 LHS_Lwr_IB_pickup[1] = RHS_Lwr_IB_pickup[1];
 
 
-print(RHS_Upr_IB_pickup);
-print(RHS_Lwr_IB_pickup);
+#print(RHS_Upr_IB_pickup);
+#print(RHS_Lwr_IB_pickup);
 
 #Function that finds the instantaneous centre. Abstraction allows for calling this function over and over again.(Keeps code clean)
 def Find_IC(Upr_OB,Upr_IB,Lwr_OB,Lwr_IB):
@@ -232,68 +244,34 @@ def Find_OB(OB_point,Track,IB_point,WB_rad):
     return New_OB_point
     
 
-def Find_OB_damper(OB_point,Track,IB_point,WB_rad):
+def Find_OB_damper(OB_point,IB_point,d_parallel,d_perpendicular):
+    OB_point = np.array([OB_point[0] , OB_point[1]])
+    IB_point = np.array([IB_point[0] , IB_point[1]])
+    wb_vector = OB_point - IB_point; # Make vector along wishbone
+    wb_vector = wb_vector/(np.linalg.norm(wb_vector))#Normalise vector along wishbone
+    parallel_vector = wb_vector * d_parallel
+    P = OB_point - parallel_vector
+    perp_vector = np.array([parallel_vector[1],-parallel_vector[0]]) # Make a vector perpendicular to the wb vector. This is the cross product with the k-direction
+    Damper_point = P + (perp_vector/(np.linalg.norm(perp_vector))) * d_perpendicular
     
-    # Find the radius of the cirlce passing through the centre of contact patch and OB point.
-    r0 = math.sqrt(((OB_point[0] - Track/2)**2) + (OB_point[1]**2));
-
-    # The radius of the second circle is equal to the length of the relevant wishbone in front view.
-    r1 = WB_rad;
+#    if Damper_point[1] < P[1]:
+#        Damper_point -= 2 * (perp_vector * d_perpendicular)
     
-    # Define the centre points of each of these circles
-    x0 = Track/2;
-    y0 = 0;
-    x1 = IB_point[0];
-    y1 = IB_point[1];
-
-    # As shown by hand, linearise the equations to give y in terms of x.
-    # These next lines of code give the gradient and constant that define this line.
-    m = (x0-x1)/(y1-y0);
-    constant = ((r0**2 + x1**2 + y1**2) - (r1**2 + x0**2 + y0**2))/(2*(y1 - y0));
+    return [Damper_point[0], Damper_point[1]]
     
-    """ Using y = mx + c and the inital equation defining one of the circles, we have a line that passes
-        through the points where the circles intersect. Thus, using this sustitution will give a quadratic
-        that can be solved to find intersection points. Below, we find the relevant coefficients to solve
-        using the quadratic equation and this then finds both x solutions """
-    
-    a = 1 + m**2;
-    b = (2*constant*m) - (2*x0) - (2*y0*m);
-    c = (x0**2) + (constant**2) + (y0**2) - (2*y0*constant) - (r0**2);
-
-    x_sol1 = (-b + (math.sqrt((b**2) - (4*a*c))))/(2*a);
-    x_sol2 = (-b - (math.sqrt((b**2) - (4*a*c))))/(2*a);
-    
-    # Using y = mx + c we can find the corresponding y coordinates.
-    y_sol1 = (m*x_sol1) + constant;
-    y_sol2 = (m*x_sol2) + constant;
-    
-    """ As we are iterating for each small rotation, intuitively we would expect that the closest point to
-        the previous OB point is the correct solution. Whilst not the most robust way to do this, it is
-        the simplest to code and should not cause any issues. """
-    
-    # Start by finding the absollute distance between each solution and the old OB point.
-    
-    r_sol1 = math.sqrt(((x_sol1 - OB_point[0])**2) + ((y_sol1 - OB_point[1])**2));
-    r_sol2 = math.sqrt(((x_sol2 - OB_point[0])**2) + ((y_sol2 - OB_point[1])**2));
-    
-    # Return the new OB point (i.e. the point colosest to the old one)
-    
-    if r_sol1 < r_sol2:
-        New_OB_point = [x_sol1,y_sol1];
-        
-    else:
-        New_OB_point = [x_sol2,y_sol2];
-    
-    return New_OB_point
 
 # Create lists to hold the roll centre coordinates, roll angles, scrub radii and wheel camber
 Roll_centres = [];
+damper_extension = []
+wheel_movement = []
+Damper_pt = []
+Damper_pt2 = []
 
 # Output the baseline roll centre
 RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
 LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
 Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);
-print("Baseline roll centre height is: " + str(round(Roll_centre[1],2)) + " mm.");
+#print("Baseline roll centre height is: " + str(round(Roll_centre[1],2)) + " mm.");
 
 
 """This is the bump/rebound section of the script"""
@@ -340,48 +318,38 @@ while Sweep_param <= dv_max:
     LHS_Upr_IB_pickup = Move_IB_point(LHS_Upr_IB_pickup,-Movement_step);
     LHS_Lwr_IB_pickup = Move_IB_point(LHS_Lwr_IB_pickup,-Movement_step);
     Damper_IB = Move_IB_point(Damper_IB,-Movement_step);
-    
+
     # From the new IB pickup points, find the new positions of the OB points.
     RHS_Upr_OB_pickup = Find_OB(RHS_Upr_OB_pickup,Track,RHS_Upr_IB_pickup,UWB_length);
     RHS_Lwr_OB_pickup = Find_OB(RHS_Lwr_OB_pickup,Track,RHS_Lwr_IB_pickup,LWB_length);
     LHS_Upr_OB_pickup = Find_OB(LHS_Upr_OB_pickup,-Track,LHS_Upr_IB_pickup,UWB_length);
     LHS_Lwr_OB_pickup = Find_OB(LHS_Lwr_OB_pickup,-Track,LHS_Lwr_IB_pickup,LWB_length);
-    Damper_OB = Find_OB_damper()
+    Damper_OB = Find_OB_damper(RHS_Lwr_OB_pickup, RHS_Lwr_IB_pickup, d_parallel, d_perpendicular)
+    
+    damper_length = math.sqrt((Damper_IB[0] - Damper_OB[0])**2 + (Damper_IB[1] - Damper_OB[1])**2)
+    print(damper_length)
     
     Sweep_param += Movement_step;
-    
-# Create wishbones, uprights, connection to contact patch in max bump
-RHS_Upr_WB_bump = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
-RHS_Lwr_WB_bump = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
-RHS_upright_bump = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup]; 
-
-RHS_wheel_bump = [RHS_Lwr_OB_pickup, [Track/2,0]]; 
-
-#Plot max bump geometry
-plt.plot(*zip(*RHS_Upr_WB_bump), marker='x', color='r');
-plt.plot(*zip(*RHS_Lwr_WB_bump), marker='x', color='r');
-plt.plot(*zip(*RHS_upright_bump), color='r');
-plt.plot(*zip(*RHS_wheel_bump), color='r');
 
 
 """ After moving the COG to its lowest expected point, we run through the whole sweep
     from maximum bump to maximum rebound."""
 
 Sweep_param = 0; # sweep parameter.
-Sweep_size = dv_max; #Define the total size of the sweep.
+Sweep_size = 2 * dv_max; #Define the total size of the sweep.
+
+
+damper_length = math.sqrt((Damper_IB[0] - Damper_OB[0])**2 + (Damper_IB[1] - Damper_OB[1])**2)
+
+damper_compression = -(bsl_damper_length - damper_length)
+
+wheel_movement.append(dv_max - Sweep_param)
+
+damper_extension.append(damper_compression)
 
 while Sweep_param < Sweep_size:
-    # This iterative loop rolls the car up to the expected maximum and saves the coordinates in a list
-    # of tuples that are later used to plot a graph of roll migration.
-    # Find the instantaneous centres
-    RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
-    LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
-    
-    # Find the roll centre, scrub radius and kingpin angle.
-    Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);  
-    
+
     # Rotate the COG and IB pickup points (same angle of rotation because it's a solid body)
-    Sprung_COG = Move_IB_point(Sprung_COG,Movement_step);
     RHS_Upr_IB_pickup = Move_IB_point(RHS_Upr_IB_pickup,Movement_step);
     RHS_Lwr_IB_pickup = Move_IB_point(RHS_Lwr_IB_pickup,Movement_step);
     LHS_Upr_IB_pickup = Move_IB_point(LHS_Upr_IB_pickup,Movement_step);
@@ -393,31 +361,27 @@ while Sweep_param < Sweep_size:
     RHS_Lwr_OB_pickup = Find_OB(RHS_Lwr_OB_pickup,Track,RHS_Lwr_IB_pickup,LWB_length);
     LHS_Upr_OB_pickup = Find_OB(LHS_Upr_OB_pickup,-Track,LHS_Upr_IB_pickup,UWB_length);
     LHS_Lwr_OB_pickup = Find_OB(LHS_Lwr_OB_pickup,-Track,LHS_Lwr_IB_pickup,LWB_length);
+    Damper_OB = Find_OB_damper(RHS_Lwr_OB_pickup, RHS_Lwr_IB_pickup, d_parallel, d_perpendicular)
+    
+    damper_length = math.sqrt((Damper_IB[0] - Damper_OB[0])**2 + (Damper_IB[1] - Damper_OB[1])**2)
+    damper_compression = (bsl_damper_length - damper_length)
+    #print(damper_length,bsl_damper_length,damper_compression)
+    
+    Damper_pt.append(Damper_OB)
+    
+    wheel_movement.append(dv_max - Sweep_param)
+    damper_extension.append(-damper_compression)
     
     Sweep_param += Movement_step;
 
-# Append final values to the appropriate lists in order to plot graphs later
-Roll_centres.append((Roll_centre[0],Roll_centre[1]));
+plt.plot(wheel_movement,damper_extension)
+plt.xlim(-35,35)
+plt.xlabel("Vertical Wheel Movement in mm (Bump +ve)")
+plt.ylabel("Spring compression in mm")
+plt.grid()
+plt.show()
 
-# Create wishbones, uprights, connection to contact patch
-RHS_Upr_WB_reb = [RHS_Upr_OB_pickup,RHS_Upr_IB_pickup];
-RHS_Lwr_WB_reb = [RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup];
-RHS_upright_reb = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
-
-RHS_wheel_reb = [RHS_Lwr_OB_pickup, [Track/2,0]]; 
-
-#Plot Max rebound geometry
-plt.plot(*zip(*RHS_Upr_WB_reb), marker='x', color='y');
-plt.plot(*zip(*RHS_Lwr_WB_reb), marker='x', color='y');
-plt.plot(*zip(*RHS_upright_reb), color='y');
-plt.plot(*zip(*RHS_wheel_reb), color='y');
-blue = mpatches.Patch(color='blue', label='Baseline');
-red = mpatches.Patch(color='red', label='Maximum bump');
-yellow = mpatches.Patch(color='yellow', label='Maximum rebound');
-plt.legend(handles=[blue,red,yellow]);
-plt.xlim(75,650);
-plt.ylim(0,400);
-plt.xlabel("x-coordinate");
-plt.ylabel("y-coordinate");
-plt.title("Geometry changes in bump");
-plt.show();
+plt.plot(*zip(*Damper_pt))
+plt.plot(*zip(*Damper_pt2))
+plt.grid()
+plt.show()

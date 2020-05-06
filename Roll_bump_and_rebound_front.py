@@ -347,7 +347,6 @@ while Roll <= Applied_roll:
     RHS_Lwr_OB_pickup = Find_OB(RHS_Lwr_OB_pickup,Track,RHS_Lwr_IB_pickup,LWB_length);
     LHS_Upr_OB_pickup = Find_OB(LHS_Upr_OB_pickup,-Track,LHS_Upr_IB_pickup,UWB_length);
     LHS_Lwr_OB_pickup = Find_OB(LHS_Lwr_OB_pickup,-Track,LHS_Lwr_IB_pickup,LWB_length);
-    
     Roll += Roll_step;
 
 #Save geometry at max roll.
@@ -509,7 +508,8 @@ while Sweep_param <= Applied_bump:
     RHS_Lwr_OB_pickup = Find_OB(RHS_Lwr_OB_pickup,Track,RHS_Lwr_IB_pickup,LWB_length);
     LHS_Upr_OB_pickup = Find_OB(LHS_Upr_OB_pickup,-Track,LHS_Upr_IB_pickup,UWB_length);
     LHS_Lwr_OB_pickup = Find_OB(LHS_Lwr_OB_pickup,-Track,LHS_Lwr_IB_pickup,LWB_length);
-    
+    var = [RHS_Lwr_OB_pickup[0] - RHS_Lwr_IB_pickup[0], RHS_Lwr_OB_pickup[1] - RHS_Lwr_IB_pickup[1]]
+    print(var)
     Sweep_param += Movement_step;
     
 # Create wishbones, uprights, connection to contact patch in max bump
@@ -519,8 +519,7 @@ RHS_upright_bump = [RHS_Lwr_OB_pickup, RHS_Upr_OB_pickup];
 
 RHS_wheel_bump = [RHS_Lwr_OB_pickup, [Track/2,0]]; 
 
-#Plot max bump geometry
-plt.plot(*zip(*RHS_Upr_WB_bump), marker='x', color='r');
+#Plot max bump geometryplt.plot(*zip(*RHS_Upr_WB_bump), marker='x', color='r');
 plt.plot(*zip(*RHS_Lwr_WB_bump), marker='x', color='r');
 plt.plot(*zip(*RHS_upright_bump), color='r');
 plt.plot(*zip(*RHS_wheel_bump), color='r');
