@@ -22,7 +22,9 @@ import numpy as np
 
 # Define key parameters. All length parameters / coordinates in mm.
 RHS_Upr_OB_pickup = [528.53,368]; #RHS Upper OB pickup point
+UBJ_x_coord = 9.58 # LBJ x coordinate. This does not affect the roll/bump calculations. It is only for calculating caster angle
 RHS_Lwr_OB_pickup = [564.85,140]; #RHS Lower OB pickup point
+LBJ_x_coord = -9.23 # LBJ x coordinate. This does not affect the roll/bump calculations. It is only for calculating caster angle
 LHS_Upr_OB_pickup = [-RHS_Upr_OB_pickup[0],RHS_Upr_OB_pickup[1]]; #LHS Upper OB pickup point
 LHS_Lwr_OB_pickup = [-RHS_Lwr_OB_pickup[0],RHS_Lwr_OB_pickup[1]]; #LHS Lower OB pickup point
 static_camber = -1.5; #In degrees
@@ -40,11 +42,11 @@ Roll_centre = [0,0] #This will not be used at the given value, but will be calcu
 Roll_step = 0.001; #Add a small amount of roll with each iteration. The smaller this is, the more accurate it will be but will take longer to run.
 RHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
 LHS_scrub_rad = 0; # This will be calculated later so the value is largely irrelevant.
-#Tyre_rad = 256.5; #Tyre radius in mm, will be used to find contact patch centre. Current tyre is 256.5 mm rad.
-
+Tyre_rad = 256.5; #Tyre radius in mm, will be used to find contact patch centre. Current tyre is 256.5 mm rad.
 
 Damper_IB = [189.7,569.3];
 Damper_OB = [494.2,157.5];
+
 
 # Define the maximum amount of expected roll and the program will iterate up to this.
 Applied_roll = 3; #Roll artificially applied to the car
@@ -309,6 +311,27 @@ def Find_OB_damper(OB_point,IB_point,d_parallel,d_perpendicular):
     
     return [Damper_point[0], Damper_point[1]]
 
+def Find_spindle(Upr_OB,Lwr_OB,Tyre_rad,Track):
+    # Find Gradients and appropriate constant to turn kingpin axis into a line in cartesian space.
+    m = (Upr_OB[1]-Lwr_OB[1])/(Upr_OB[0]-Lwr_OB[0])
+    c = Upr_OB[1] - (m*Upr_OB[0]);
+    
+    #The spindle length is the offset of the kingpin axis at wheel centreline
+    offset_x_coord = (Tyre_rad - c)/m
+    spindle = Track/2 - offset_x_coord
+    
+    return spindle
+
+def Find_kinematic_trail(Upr_OB,Lwr_OB,UBJ_x_coord,LBJ_x_coord):
+    #Turn caster axis into a line in cartesian space
+    m = (Upr_OB[1]-Lwr_OB[1])/(UBJ_x_coord - LBJ_x_coord)
+    c = Upr_OB[1] - (m * UBJ_x_coord)
+    
+    #Find where this intersects the ground
+    kinematic_trail = c/m
+    
+    return kinematic_trail
+    
 
 # Create lists to hold the roll centre coordinates, roll angles, scrub radii and wheel camber
 Roll_centres = [];
@@ -340,7 +363,8 @@ Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);
 bsl_KPI = RHS_kingpin_angle
 bsl_scrub_rad = RHS_scrub_rad
 bsl_RC = Roll_centre
-
+bsl_caster_angle = (180/np.pi) * np.arctan((UBJ_x_coord - LBJ_x_coord)/(RHS_Upr_OB_pickup[1] - RHS_Lwr_OB_pickup[1]))
+bsl_spindle_length = Find_spindle(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,Tyre_rad,Track)
 
 """This is the main loop of the code"""
 while Roll <= Applied_roll:
@@ -460,6 +484,8 @@ plt.ylabel("LHS camber angle");
 plt.title("LHS camber angle vs roll");
 plt.show();
 
+#Calculate ride camber at baseline
+roll_camber = (RHS_cambers[1] - RHS_cambers[0])/Roll_step
 
 """This is the bump/rebound section of the script"""
 
@@ -535,6 +561,7 @@ Damper_IB = Move_IB_point(Damper_IB , -Applied_bump);
 RHS_Upr_OB_pickup = Find_OB(RHS_Upr_OB_pickup,Track,RHS_Upr_IB_pickup,UWB_length);
 RHS_Lwr_OB_pickup = Find_OB(RHS_Lwr_OB_pickup,Track,RHS_Lwr_IB_pickup,LWB_length);
 Damper_OB = Find_OB_damper(RHS_Lwr_OB_pickup, RHS_Lwr_IB_pickup, d_parallel, d_perpendicular)
+kinematic_trail = Find_kinematic_trail(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,UBJ_x_coord,LBJ_x_coord)
 
 #Find new damper length  
 damper_len = Find_length(Damper_OB , Damper_IB)
@@ -663,9 +690,16 @@ plt.show()
 #Assume motion ratio is linear and find MR by taking first and last index of the list of damper lengths
 motion_ratio = (damper_lengths[-1][1] - damper_lengths[0][1]) / (damper_lengths[-1][0] - damper_lengths[0][0])
 
+#Calculate ride camber at baseline
+ride_camber = 1000*(RHS_cambers[1] - RHS_cambers[0])/Movement_step
+
 # Output the baseline kingpin angle, scrub radius, roll centre and motion ratio.
-print("Baseline kingpin angle is: " + str(round(bsl_KPI,2)) + "˚.");
+print("Baseline kingpin inclination (KPI) is: " + str(round(bsl_KPI,2)) + "˚.");
 print("Baseline scrub radius is: " + str(round(bsl_scrub_rad,2)) + " mm.");
 print("Baseline roll centre height is: " + str(round(bsl_RC[1],2)) + " mm.");
 print("Motion ratio is " + str(round(motion_ratio,3)))
-
+print("Ride camber is " + str(round(ride_camber,2)) + ("˚/m."))
+print("Roll camber is " + str(round(roll_camber,3)) + ("˚/˚."))
+print("caster angle is " + str(round(bsl_caster_angle,2)) + "˚.")
+print("Spindle length (or Kingpin axis offset) is: " + str(round(bsl_spindle_length,2)) + " mm.")
+print("Kinematic trail is: " + str(round(kinematic_trail,2)) + " mm.")
