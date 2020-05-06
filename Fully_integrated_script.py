@@ -323,23 +323,23 @@ RC_migration = [];
 LHS_camber = static_camber;
 RHS_camber = static_camber;
 
-# Find initial kingpin angles.
+# Find initial kingpin angles and scrub radius
 RHS_kingpin_angle = Find_kingpin_angle(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup);
 LHS_kingpin_angle = Find_kingpin_angle(LHS_Upr_OB_pickup,LHS_Lwr_OB_pickup);
+RHS_scrub_rad = Find_scrub_rad(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,Track);
 
 # The angle between camber and kingpin is fixed so this allows us to find camber.
 camber_to_kingpin = RHS_camber - RHS_kingpin_angle;
 
-# Output the baseline kingpin angle and scrub radius.
-print("Baseline kingpin angle is: " + str(round(RHS_kingpin_angle,2)) + "˚.");
-RHS_scrub_rad = Find_scrub_rad(RHS_Upr_OB_pickup,RHS_Lwr_OB_pickup,Track);
-print("Baseline scrub radius is: " + str(round(RHS_scrub_rad,2)) + " mm.");
-
-# Output the baseline roll centre
+# Find the baseline roll centre
 RHS_IC = Find_IC(RHS_Upr_OB_pickup,RHS_Upr_IB_pickup,RHS_Lwr_OB_pickup,RHS_Lwr_IB_pickup);
 LHS_IC = Find_IC(LHS_Upr_OB_pickup,LHS_Upr_IB_pickup,LHS_Lwr_OB_pickup,LHS_Lwr_IB_pickup);
 Roll_centre = Find_RC(RHS_IC, LHS_IC, Track);
-print("Baseline roll centre height is: " + str(round(Roll_centre[1],2)) + " mm.");
+
+#Note variables that we want to output.
+bsl_KPI = RHS_kingpin_angle
+bsl_scrub_rad = RHS_scrub_rad
+bsl_RC = Roll_centre
 
 
 """This is the main loop of the code"""
@@ -658,9 +658,14 @@ plt.xlabel("Vertical Wheel Movement")
 plt.ylabel("Damper Extension (Compression positive)")
 plt.grid()
 plt.title("Motion ratio")
+plt.show()
 
 #Assume motion ratio is linear and find MR by taking first and last index of the list of damper lengths
 motion_ratio = (damper_lengths[-1][1] - damper_lengths[0][1]) / (damper_lengths[-1][0] - damper_lengths[0][0])
 
+# Output the baseline kingpin angle, scrub radius, roll centre and motion ratio.
+print("Baseline kingpin angle is: " + str(round(bsl_KPI,2)) + "˚.");
+print("Baseline scrub radius is: " + str(round(bsl_scrub_rad,2)) + " mm.");
+print("Baseline roll centre height is: " + str(round(bsl_RC[1],2)) + " mm.");
 print("Motion ratio is " + str(round(motion_ratio,3)))
 
